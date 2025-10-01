@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Search, Filter, Plus } from 'lucide-react';
+import { Search, Filter, QrCode } from 'lucide-react';
 import { TransactionCard } from '../components/TransactionCard';
 import { Button } from '../components/ui/Button';
+import { QRScannerModal } from '../components/QRScannerModal';
 
-const mockTransactions = [
+const initialTransactions = [
   { id: '1', merchant: 'Whole Foods', amount: -85.43, category: 'Food', date: 'Oct 1, 2025', type: 'expense' as const },
   { id: '2', merchant: 'Salary', amount: 3500.00, category: 'Income', date: 'Oct 1, 2025', type: 'income' as const },
   { id: '3', merchant: 'Uber', amount: -24.50, category: 'Transport', date: 'Sep 30, 2025', type: 'expense' as const },
@@ -18,10 +19,16 @@ const mockTransactions = [
 
 export function Transactions() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [transactions, setTransactions] = useState(initialTransactions);
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
-  const filteredTransactions = mockTransactions.filter((transaction) =>
+  const filteredTransactions = transactions.filter((transaction) =>
     transaction.merchant.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleQRScan = (newTransaction: any) => {
+    setTransactions([newTransaction, ...transactions]);
+  };
 
   return (
     <div className="space-y-6">
@@ -34,10 +41,6 @@ export function Transactions() {
             View and manage all your transactions
           </p>
         </div>
-        <Button variant="primary" className="w-full sm:w-auto">
-          <Plus className="w-5 h-5 mr-2" />
-          Add Transaction
-        </Button>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4">
@@ -48,7 +51,7 @@ export function Transactions() {
             placeholder="Search transactions..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 rounded-2xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
+            className="w-full pl-12 pr-4 py-3 rounded-2xl border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
           />
         </div>
         <Button variant="outline">
@@ -70,6 +73,21 @@ export function Transactions() {
           )}
         </div>
       </div>
+
+      {/* Floating QR Scanner Button */}
+      <button
+        onClick={() => setIsQRModalOpen(true)}
+        className="fixed bottom-24 lg:bottom-8 right-8 w-16 h-16 bg-gradient-to-br from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110 z-40"
+        aria-label="Scan QR Code"
+      >
+        <QrCode className="w-7 h-7" />
+      </button>
+
+      <QRScannerModal
+        isOpen={isQRModalOpen}
+        onClose={() => setIsQRModalOpen(false)}
+        onScanComplete={handleQRScan}
+      />
     </div>
   );
 }
